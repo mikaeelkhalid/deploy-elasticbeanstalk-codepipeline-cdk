@@ -3,7 +3,7 @@ import {
   CfnApplication,
   CfnApplicationVersion,
 } from 'aws-cdk-lib/aws-elasticbeanstalk';
-import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { ManagedPolicy, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { Construct } from 'constructs';
 
@@ -42,6 +42,12 @@ export class EbCodePipelineStack extends Stack {
         assumedBy: new ServicePrincipal('ec2.amazonaws.com'),
       }
     );
+
+    const managedPolicy = ManagedPolicy.fromAwsManagedPolicyName(
+      'AWSElasticBeanstalkWebTier'
+    );
+
+    instanceRole.addManagedPolicy(managedPolicy);
   }
 }
 
