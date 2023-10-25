@@ -3,7 +3,12 @@ import {
   CfnApplication,
   CfnApplicationVersion,
 } from 'aws-cdk-lib/aws-elasticbeanstalk';
-import { ManagedPolicy, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import {
+  CfnInstanceProfile,
+  ManagedPolicy,
+  Role,
+  ServicePrincipal,
+} from 'aws-cdk-lib/aws-iam';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { Construct } from 'constructs';
 
@@ -48,6 +53,13 @@ export class EbCodePipelineStack extends Stack {
     );
 
     instanceRole.addManagedPolicy(managedPolicy);
+
+    const instanceProfileName = `${appName}-instance-profile`;
+
+    const instanceProfile = new CfnInstanceProfile(this, instanceProfileName, {
+      instanceProfileName: instanceProfileName,
+      roles: [instanceRole.roleName],
+    });
   }
 }
 
