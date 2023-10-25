@@ -17,6 +17,7 @@ import {
   Role,
   ServicePrincipal,
 } from 'aws-cdk-lib/aws-iam';
+import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { Construct } from 'constructs';
 
@@ -24,12 +25,18 @@ export interface EbCodePipelineStackProps extends StackProps {
   minSize?: string;
   maxSize?: string;
   instanceTypes?: string;
-  envName?: string;
-  codePipelineName?: string;
+  envName: string;
+  appName: string;
+  branch: string;
+  pipelineName: string;
+  pipelineBucket: string;
+  githubRepoOwner: string;
+  githubRepoName: string;
+  githubAccessTokenName: string;
 }
 
 export class EbCodePipelineStack extends Stack {
-  constructor(scope: Construct, id: string, props?: EbCodePipelineStackProps) {
+  constructor(scope: Construct, id: string, props: EbCodePipelineStackProps) {
     super(scope, id, props);
 
     /*-----------------------elasticbeanstalk-----------------------------*/
@@ -40,7 +47,7 @@ export class EbCodePipelineStack extends Stack {
     });
 
     // create a elasticbeanstalk app.
-    const appName = 'expressjs-eb-app';
+    const appName = props.appName;
     const app = new CfnApplication(this, 'eb-application', {
       applicationName: appName,
     });
@@ -105,7 +112,7 @@ export class EbCodePipelineStack extends Stack {
 
     // create an elasticbeanstalk environment to run the application
     const ebEnvironment = new CfnEnvironment(this, 'eb-environment', {
-      environmentName: props?.envName ?? 'eb-nodejs-app-environment',
+      environmentName: props.envName,
       applicationName: app.applicationName || appName,
       solutionStackName: '64bit Amazon Linux 2 v5.8.0 running Node.js 18',
       optionSettings: optionSettingProperties,
@@ -118,10 +125,10 @@ export class EbCodePipelineStack extends Stack {
     const sourceOutput = new Artifact();
     const sourceAction = new GitHubSourceAction({
       actionName: 'GitHub',
-      owner: 'GitHubOwner',
-      repo: 'GitHubRepo',
-      branch: 'GitHubBranch',
-      oauthToken: SecretValue.secretsManager('github-access-token-secret'),
+      owner: props.githubRepoOwner,
+      repo: props.githubRepoName,
+      branch: props.branch,
+      oauthToken: SecretValue.secretsManager(props.githubAccessTokenName),
       output: sourceOutput,
     });
 
@@ -162,9 +169,16 @@ export class EbCodePipelineStack extends Stack {
       input: buildOutput,
     });
 
+    const getPipelineBucket = Bucket.fromBucketName(
+      this,
+      'ExistingBucket',
+      props.pipelineBucket
+    );
+
     // construct the codepipeline.
     const codePipeline = new Pipeline(this, 'codepipeline', {
-      pipelineName: props?.codePipelineName ?? 'eb-nodejs-codepipeline',
+      pipelineName: props.pipelineName,
+      artifactBucket: getPipelineBucket,
       stages: [
         {
           stageName: 'Source',

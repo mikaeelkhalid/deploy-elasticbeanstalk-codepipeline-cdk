@@ -1,0 +1,16 @@
+environmentType: dev
+githubRepoName:
+githubRepoOwner:
+githubAccessTokenName:
+
+dev:
+  stackName:
+  branch:
+  pipelineBucket:
+  pipelineConfig:
+    name:
+  minSize: 1
+  maxSize: 1
+  instanceTypes: t2.micro
+  ebEnvName:
+  ebAppName:
