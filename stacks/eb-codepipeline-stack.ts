@@ -1,5 +1,8 @@
 import { Stack, StackProps } from 'aws-cdk-lib';
-import { CfnApplication } from 'aws-cdk-lib/aws-elasticbeanstalk';
+import {
+  CfnApplication,
+  CfnApplicationVersion,
+} from 'aws-cdk-lib/aws-elasticbeanstalk';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { Construct } from 'constructs';
 
@@ -14,8 +17,17 @@ export class EbCodePipelineStack extends Stack {
 
     // create a elasticbeanstalk app.
     const appName = 'expressjs-eb-app';
-    const app = new CfnApplication(this, 'application', {
+    const app = new CfnApplication(this, 'eb-application', {
       applicationName: appName,
+    });
+
+    // create an app version from the S3 asset defined above
+    const appVersionProps = new CfnApplicationVersion(this, 'eb-app-version', {
+      applicationName: appName,
+      sourceBundle: {
+        s3Bucket: webAppZipArchive.s3BucketName,
+        s3Key: webAppZipArchive.s3ObjectKey,
+      },
     });
   }
 }
