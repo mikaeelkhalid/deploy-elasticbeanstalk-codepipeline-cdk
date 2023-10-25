@@ -2,6 +2,7 @@ environmentType:
 githubRepoName:
 githubRepoOwner:
 githubAccessTokenName:
+projectType: ts # value should be either: ts or js
 
 dev:
   stackName:

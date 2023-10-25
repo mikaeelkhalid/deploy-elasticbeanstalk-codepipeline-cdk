@@ -24,6 +24,7 @@ if (config.environmentType === 'dev') {
     envName: config.dev.ebEnvName,
     appName: config.dev.ebAppName,
     githubAccessTokenName: config.githubAccessTokenName,
+    projectType: config.projectType,
   };
 }
 if (config.environmentType === 'prod') {
@@ -41,6 +42,7 @@ if (config.environmentType === 'prod') {
     envName: config.prod.ebEnvName,
     appName: config.prod.ebAppName,
     githubAccessTokenName: config.githubAccessTokenName,
+    projectType: config.projectType,
   };
 }
 

@@ -33,6 +33,7 @@ export interface EbCodePipelineStackProps extends StackProps {
   githubRepoOwner: string;
   githubRepoName: string;
   githubAccessTokenName: string;
+  projectType: string;
 }
 
 export class EbCodePipelineStack extends Stack {
@@ -171,7 +172,7 @@ export class EbCodePipelineStack extends Stack {
       actionName: 'ElasticBeanstalk',
       applicationName: appName,
       environmentName: props?.envName ?? 'eb-nodejs-app-environment',
-      input: buildOutput,
+      input: props.projectType === 'ts' ? buildOutput : sourceOutput,
     });
 
     const getPipelineBucket = Bucket.fromBucketName(
@@ -180,24 +181,39 @@ export class EbCodePipelineStack extends Stack {
       props.pipelineBucket
     );
 
+    const jsProject = [
+      {
+        stageName: 'Source',
+        actions: [sourceAction],
+      },
+      {
+        stageName: 'Deploy',
+        actions: [deployAction],
+      },
+    ];
+
+    const tsProject = [
+      {
+        stageName: 'Source',
+        actions: [sourceAction],
+      },
+      {
+        stageName: 'Build',
+        actions: [buildAction],
+      },
+      {
+        stageName: 'Deploy',
+        actions: [deployAction],
+      },
+    ];
+
+    const getStages = props.projectType === 'ts' ? tsProject : jsProject;
+
     // construct the codepipeline.
     const codePipeline = new Pipeline(this, 'codepipeline', {
       pipelineName: props.pipelineName,
       artifactBucket: getPipelineBucket,
-      stages: [
-        {
-          stageName: 'Source',
-          actions: [sourceAction],
-        },
-        {
-          stageName: 'Build',
-          actions: [buildAction],
-        },
-        {
-          stageName: 'Deploy',
-          actions: [deployAction],
-        },
-      ],
+      stages: getStages,
     });
 
     codePipeline.node.addDependency(app, ebEnvironment);
