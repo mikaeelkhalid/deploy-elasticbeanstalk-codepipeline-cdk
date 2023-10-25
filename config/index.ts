@@ -23,7 +23,7 @@ if (config.environmentType === 'dev') {
     instanceTypes: config.dev.instanceTypes,
     envName: config.dev.ebEnvName,
     appName: config.dev.ebAppName,
-    githubAccessTokenName: config.dev.githubAccessTokenName,
+    githubAccessTokenName: config.githubAccessTokenName,
   };
 }
 if (config.environmentType === 'prod') {
@@ -40,7 +40,7 @@ if (config.environmentType === 'prod') {
     instanceTypes: config.prod.instanceTypes,
     envName: config.prod.ebEnvName,
     appName: config.prod.ebAppName,
-    githubAccessTokenName: config.prod.githubAccessTokenName,
+    githubAccessTokenName: config.githubAccessTokenName,
   };
 }
 
