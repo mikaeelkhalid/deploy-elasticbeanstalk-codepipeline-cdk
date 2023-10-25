@@ -3,6 +3,7 @@ import { BuildSpec, LinuxBuildImage, Project } from 'aws-cdk-lib/aws-codebuild';
 import { Artifact } from 'aws-cdk-lib/aws-codepipeline';
 import {
   CodeBuildAction,
+  ElasticBeanstalkDeployAction,
   GitHubSourceAction,
 } from 'aws-cdk-lib/aws-codepipeline-actions';
 import {
@@ -150,6 +151,14 @@ export class EbCodePipelineStack extends Stack {
       project: buildProject,
       input: sourceOutput,
       outputs: [buildOutput],
+    });
+
+    // define the deployment action.
+    const deployAction = new ElasticBeanstalkDeployAction({
+      actionName: 'ElasticBeanstalk',
+      applicationName: appName,
+      environmentName: props?.envName ?? 'eb-nodejs-app-environment',
+      input: buildOutput,
     });
   }
 }
