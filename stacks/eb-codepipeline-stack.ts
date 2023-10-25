@@ -1,6 +1,6 @@
 import { SecretValue, Stack, StackProps } from 'aws-cdk-lib';
 import { BuildSpec, LinuxBuildImage, Project } from 'aws-cdk-lib/aws-codebuild';
-import { Artifact } from 'aws-cdk-lib/aws-codepipeline';
+import { Artifact, Pipeline } from 'aws-cdk-lib/aws-codepipeline';
 import {
   CodeBuildAction,
   ElasticBeanstalkDeployAction,
@@ -25,6 +25,7 @@ export interface EbCodePipelineStackProps extends StackProps {
   maxSize?: string;
   instanceTypes?: string;
   envName?: string;
+  codePipelineName?: string;
 }
 
 export class EbCodePipelineStack extends Stack {
@@ -159,6 +160,25 @@ export class EbCodePipelineStack extends Stack {
       applicationName: appName,
       environmentName: props?.envName ?? 'eb-nodejs-app-environment',
       input: buildOutput,
+    });
+
+    // construct the codepipeline.
+    const codePipeline = new Pipeline(this, 'codepipeline', {
+      pipelineName: props?.codePipelineName ?? 'eb-nodejs-codepipeline',
+      stages: [
+        {
+          stageName: 'Source',
+          actions: [sourceAction],
+        },
+        {
+          stageName: 'Build',
+          actions: [buildAction],
+        },
+        {
+          stageName: 'Deploy',
+          actions: [deployAction],
+        },
+      ],
     });
   }
 }
