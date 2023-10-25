@@ -1,4 +1,6 @@
-import { Stack, StackProps } from 'aws-cdk-lib';
+import { SecretValue, Stack, StackProps } from 'aws-cdk-lib';
+import { Artifact } from 'aws-cdk-lib/aws-codepipeline';
+import { GitHubSourceAction } from 'aws-cdk-lib/aws-codepipeline-actions';
 import {
   CfnApplication,
   CfnApplicationVersion,
@@ -23,6 +25,8 @@ export interface EbCodePipelineStackProps extends StackProps {
 export class EbCodePipelineStack extends Stack {
   constructor(scope: Construct, id: string, props?: EbCodePipelineStackProps) {
     super(scope, id, props);
+
+    /*-----------------------elasticbeanstalk-----------------------------*/
 
     // construct an S3 asset Zip from directory up.
     const webAppZipArchive = new Asset(this, 'expressjs-app-zip', {
@@ -100,6 +104,19 @@ export class EbCodePipelineStack extends Stack {
       solutionStackName: '64bit Amazon Linux 2 v5.8.0 running Node.js 18',
       optionSettings: optionSettingProperties,
       versionLabel: appVersionProps.ref,
+    });
+
+    /*-----------------------codepipeline-------------------------------*/
+
+    // define the github source.
+    const sourceOutput = new Artifact();
+    const sourceAction = new GitHubSourceAction({
+      actionName: 'GitHub',
+      owner: 'GitHubOwner',
+      repo: 'GitHubRepo',
+      branch: 'GitHubBranch',
+      oauthToken: SecretValue.secretsManager('github-access-token-secret'),
+      output: sourceOutput,
     });
   }
 }
