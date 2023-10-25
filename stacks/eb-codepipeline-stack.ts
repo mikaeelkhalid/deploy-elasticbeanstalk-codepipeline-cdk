@@ -92,6 +92,15 @@ export class EbCodePipelineStack extends Stack {
         value: props?.instanceTypes ?? 't2.micro',
       },
     ];
+
+    // create an elasticbeanstalk environment to run the application
+    const ebEnvironment = new CfnEnvironment(this, 'eb-environment', {
+      environmentName: props?.envName ?? 'eb-nodejs-app-environment',
+      applicationName: app.applicationName || appName,
+      solutionStackName: '64bit Amazon Linux 2 v5.8.0 running Node.js 18',
+      optionSettings: optionSettingProperties,
+      versionLabel: appVersionProps.ref,
+    });
   }
 }
 
