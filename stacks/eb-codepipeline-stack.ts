@@ -1,4 +1,4 @@
-import { SecretValue, Stack, StackProps } from 'aws-cdk-lib';
+import { CfnOutput, SecretValue, Stack, StackProps } from 'aws-cdk-lib';
 import { BuildSpec, LinuxBuildImage, Project } from 'aws-cdk-lib/aws-codebuild';
 import { Artifact, Pipeline } from 'aws-cdk-lib/aws-codepipeline';
 import {
@@ -117,6 +117,11 @@ export class EbCodePipelineStack extends Stack {
       solutionStackName: '64bit Amazon Linux 2 v5.8.0 running Node.js 18',
       optionSettings: optionSettingProperties,
       versionLabel: appVersionProps.ref,
+    });
+
+    new CfnOutput(this, 'eb-url-endpoint', {
+      value: ebEnvironment.attrEndpointUrl,
+      description: 'url endpoint for the elasticbeanstalk',
     });
 
     /*-----------------------codepipeline-------------------------------*/
