@@ -180,6 +180,8 @@ export class EbCodePipelineStack extends Stack {
         },
       ],
     });
+
+    codePipeline.node.addDependency(app, ebEnvironment);
   }
 }
 
