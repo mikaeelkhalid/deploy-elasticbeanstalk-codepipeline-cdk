@@ -2,7 +2,7 @@
   "name": "deploy-elasticbeanstalk-codepipeline-cdk",
   "version": "0.1.0",
   "bin": {
-    "deploy-elasticbeanstalk-codepipeline-cdk": "bin/deploy-elasticbeanstalk-codepipeline-cdk.js"
+    "main": "bin/main.js"
   },
   "scripts": {
     "build": "tsc",
