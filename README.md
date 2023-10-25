@@ -1,4 +1,3 @@
-````markdown
 # AWS Elastic Beanstalk CodePipeline Deployment with CDK
 
 [![Mikaeel Khalid](https://badgen.now.sh/badge/by/mikaeelkhalid/purple)](https://github.com/mikaeelkhalid)
@@ -23,15 +22,15 @@ This repository provides a robust setup for deploying Node.js applications onto 
 
 ### Setup & Deployment
 
-1. **Fill Out `config.yaml`**:
+1. **Rename `config.sample.yaml` to `config.yaml`**:
    Update this file with the necessary details, including the GitHub repository name, its owner, your GitHub access token, and any environment-specific configurations.
 
 2. **Bootstrap the AWS CDK**:
    If this is your first time using CDK on your AWS account or region, initialize your environment with:
+
    ```bash
    cdk bootstrap
    ```
-````
 
 3. **Deploy the CDK Stack**:
    Use the CDK CLI to deploy your stack:
