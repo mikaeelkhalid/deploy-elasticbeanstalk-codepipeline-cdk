@@ -3,6 +3,7 @@ import {
   CfnApplication,
   CfnApplicationVersion,
 } from 'aws-cdk-lib/aws-elasticbeanstalk';
+import { Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { Construct } from 'constructs';
 
@@ -29,6 +30,18 @@ export class EbCodePipelineStack extends Stack {
         s3Key: webAppZipArchive.s3ObjectKey,
       },
     });
+
+    // make sure that elasticbeanstalk app exists before creating an app version
+    appVersionProps.addDependency(app);
+
+    // create role and instance profile
+    const instanceRole = new Role(
+      this,
+      `${appName}-aws-elasticbeanstalk-ec2-role`,
+      {
+        assumedBy: new ServicePrincipal('ec2.amazonaws.com'),
+      }
+    );
   }
 }
 
