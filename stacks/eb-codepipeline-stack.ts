@@ -1,4 +1,5 @@
 import { SecretValue, Stack, StackProps } from 'aws-cdk-lib';
+import { BuildSpec, LinuxBuildImage, Project } from 'aws-cdk-lib/aws-codebuild';
 import { Artifact } from 'aws-cdk-lib/aws-codepipeline';
 import { GitHubSourceAction } from 'aws-cdk-lib/aws-codepipeline-actions';
 import {
@@ -117,6 +118,28 @@ export class EbCodePipelineStack extends Stack {
       branch: 'GitHubBranch',
       oauthToken: SecretValue.secretsManager('github-access-token-secret'),
       output: sourceOutput,
+    });
+
+    // define the codebuild project.
+    const buildOutput = new Artifact();
+    const buildProject = new Project(this, 'codebuild-project', {
+      buildSpec: BuildSpec.fromObject({
+        version: '0.2',
+        phases: {
+          install: {
+            commands: ['npm install'],
+          },
+          build: {
+            commands: ['npm run build'],
+          },
+        },
+        artifacts: {
+          files: ['**/*'],
+        },
+      }),
+      environment: {
+        buildImage: LinuxBuildImage.STANDARD_5_0,
+      },
     });
   }
 }
