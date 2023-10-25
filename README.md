@@ -58,7 +58,3 @@ Ensure your IAM permissions are appropriately set to allow the CDK to manage AWS
 
 Contributions are more than welcome! Feel free to fork this repository, make your improvements, and then submit them back through a pull request.
 
-```
-
-```
-
