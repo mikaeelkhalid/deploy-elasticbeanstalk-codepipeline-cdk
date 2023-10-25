@@ -34,6 +34,7 @@ export interface EbCodePipelineStackProps extends StackProps {
   githubRepoName: string;
   githubAccessTokenName: string;
   projectType: string;
+  sslCertificateArn?: string;
 }
 
 export class EbCodePipelineStack extends Stack {
@@ -109,6 +110,29 @@ export class EbCodePipelineStack extends Stack {
         optionName: 'InstanceTypes',
         value: props?.instanceTypes ?? 't2.micro',
       },
+      /* alb configuration start here */
+      /* uncomment below code if you want to use alb with https enabled */
+      // {
+      //   namespace: 'aws:elasticbeanstalk:environment',
+      //   optionName: 'LoadBalancerType',
+      //   value: 'application',
+      // },
+      // {
+      //   namespace: 'aws:elbv2:listener:443',
+      //   optionName: 'ListenerEnabled',
+      //   value: 'true',
+      // },
+      // {
+      //   namespace: 'aws:elbv2:listener:443',
+      //   optionName: 'SSLCertificateArns',
+      //   value: props.sslCertificateArn,
+      // },
+      // {
+      //   namespace: 'aws:elbv2:listener:443',
+      //   optionName: 'Protocol',
+      //   value: 'HTTPS',
+      // },
+      //* alb configuration ends here */
     ];
 
     // create an elasticbeanstalk environment to run the application
