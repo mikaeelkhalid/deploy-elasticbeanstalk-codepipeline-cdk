@@ -10,3 +10,4 @@ package-lock.json
 !express-app/*
 express-app/package-lock.json
 express-app/node_modules
+config/config.yaml
