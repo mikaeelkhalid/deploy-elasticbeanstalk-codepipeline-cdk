@@ -1,7 +1,10 @@
 import { SecretValue, Stack, StackProps } from 'aws-cdk-lib';
 import { BuildSpec, LinuxBuildImage, Project } from 'aws-cdk-lib/aws-codebuild';
 import { Artifact } from 'aws-cdk-lib/aws-codepipeline';
-import { GitHubSourceAction } from 'aws-cdk-lib/aws-codepipeline-actions';
+import {
+  CodeBuildAction,
+  GitHubSourceAction,
+} from 'aws-cdk-lib/aws-codepipeline-actions';
 import {
   CfnApplication,
   CfnApplicationVersion,
@@ -140,6 +143,13 @@ export class EbCodePipelineStack extends Stack {
       environment: {
         buildImage: LinuxBuildImage.STANDARD_5_0,
       },
+    });
+
+    const buildAction = new CodeBuildAction({
+      actionName: 'CodeBuild',
+      project: buildProject,
+      input: sourceOutput,
+      outputs: [buildOutput],
     });
   }
 }
