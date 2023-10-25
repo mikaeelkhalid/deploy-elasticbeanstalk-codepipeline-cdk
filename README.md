@@ -2,13 +2,13 @@
 
 [![Mikaeel Khalid](https://badgen.now.sh/badge/by/mikaeelkhalid/purple)](https://github.com/mikaeelkhalid)
 
-This repository provides a robust setup for deploying Node.js applications onto AWS Elastic Beanstalk using AWS CodePipeline and the AWS Cloud Development Kit (CDK).
+This repository provides a robust setup for deploying Node.js (TS) applications onto AWS Elastic Beanstalk using AWS CodePipeline and the AWS Cloud Development Kit (CDK).
 
 ## ✨ Features
 
-- 🚀 Automated Deployment: Seamless deployment of an Express.js application onto Elastic Beanstalk.
+- 🚀 Automated Deployment: Seamless deployment of an Express.js (TS) application onto Elastic Beanstalk.
 - 🔁 CI/CD Integration: Fully integrated with CodePipeline for a smooth CI/CD experience.
-- 📦 CodeBuild Integration: Uses AWS CodeBuild to install application dependencies and to prepare it for deployment.
+- 📦 CodeBuild Integration: Uses AWS CodeBuild to install application dependencies and prepare it for deployment.
 - 📡 GitHub Integration: Fetches the source code directly from a specified GitHub repository.
 
 ## 🚀 Getting Started
