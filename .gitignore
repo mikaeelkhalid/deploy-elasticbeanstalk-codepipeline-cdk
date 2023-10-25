@@ -7,3 +7,6 @@ node_modules
 .cdk.staging
 cdk.out
 package-lock.json
+!express-app/*
+express-app/package-lock.json
+express-app/node_modules
