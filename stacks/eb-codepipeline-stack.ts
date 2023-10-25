@@ -2,6 +2,7 @@ import { Stack, StackProps } from 'aws-cdk-lib';
 import {
   CfnApplication,
   CfnApplicationVersion,
+  CfnEnvironment,
 } from 'aws-cdk-lib/aws-elasticbeanstalk';
 import {
   CfnInstanceProfile,
@@ -12,8 +13,15 @@ import {
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { Construct } from 'constructs';
 
+export interface EbCodePipelineStackProps extends StackProps {
+  minSize?: string;
+  maxSize?: string;
+  instanceTypes?: string;
+  envName?: string;
+}
+
 export class EbCodePipelineStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: Construct, id: string, props?: EbCodePipelineStackProps) {
     super(scope, id, props);
 
     // construct an S3 asset Zip from directory up.
@@ -60,6 +68,30 @@ export class EbCodePipelineStack extends Stack {
       instanceProfileName: instanceProfileName,
       roles: [instanceRole.roleName],
     });
+
+    // options settings which can be configured as
+    const optionSettingProperties: CfnEnvironment.OptionSettingProperty[] = [
+      {
+        namespace: 'aws:autoscaling:launchconfiguration',
+        optionName: 'IamInstanceProfile',
+        value: instanceProfileName,
+      },
+      {
+        namespace: 'aws:autoscaling:asg',
+        optionName: 'MinSize',
+        value: props?.maxSize ?? '1',
+      },
+      {
+        namespace: 'aws:autoscaling:asg',
+        optionName: 'MaxSize',
+        value: props?.maxSize ?? '1',
+      },
+      {
+        namespace: 'aws:ec2:instances',
+        optionName: 'InstanceTypes',
+        value: props?.instanceTypes ?? 't2.micro',
+      },
+    ];
   }
 }
 
