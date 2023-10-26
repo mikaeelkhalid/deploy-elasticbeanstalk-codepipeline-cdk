@@ -3,7 +3,7 @@ githubRepoName:
 githubRepoOwner:
 githubAccessTokenName:
 projectType: ts # value should be either: ts or js
-sslCertificateArn: # optional: add ssl certificate ARN if you uncomment alb code in 'eb-codepipeline-stack.ts'
+sslCertificateArn: # optional: add ssl certificate ARN if you want alb with ssl
 
 dev:
   stackName:

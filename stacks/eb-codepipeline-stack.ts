@@ -21,6 +21,9 @@ import { Bucket } from 'aws-cdk-lib/aws-s3';
 import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { Construct } from 'constructs';
 
+const DEFAULT_SIZE = '1';
+const DEFAULT_INSTANCE_TYPE = 't2.micro';
+
 export interface EbCodePipelineStackProps extends StackProps {
   minSize?: string;
   maxSize?: string;
@@ -41,20 +44,32 @@ export class EbCodePipelineStack extends Stack {
   constructor(scope: Construct, id: string, props: EbCodePipelineStackProps) {
     super(scope, id, props);
 
-    /*-----------------------elasticbeanstalk-----------------------------*/
+    const {
+      minSize,
+      maxSize,
+      instanceTypes,
+      envName,
+      appName,
+      branch,
+      pipelineName,
+      pipelineBucket,
+      githubRepoOwner,
+      githubRepoName,
+      githubAccessTokenName,
+      projectType,
+      sslCertificateArn,
+    } = props;
 
-    // construct an S3 asset Zip from directory up.
+    /*-----------------------elasticbeanstalk---------------------------*/
+
     const webAppZipArchive = new Asset(this, 'expressjs-app-zip', {
       path: `${__dirname}/../express-app`,
     });
 
-    // create a elasticbeanstalk app.
-    const appName = props.appName;
     const app = new CfnApplication(this, 'eb-application', {
       applicationName: appName,
     });
 
-    // create an app version from the S3 asset defined above
     const appVersionProps = new CfnApplicationVersion(this, 'eb-app-version', {
       applicationName: appName,
       sourceBundle: {
@@ -63,10 +78,8 @@ export class EbCodePipelineStack extends Stack {
       },
     });
 
-    // make sure that elasticbeanstalk app exists before creating an app version
     appVersionProps.addDependency(app);
 
-    // create role and instance profile
     const instanceRole = new Role(
       this,
       `${appName}-aws-elasticbeanstalk-ec2-role`,
@@ -88,7 +101,6 @@ export class EbCodePipelineStack extends Stack {
       roles: [instanceRole.roleName],
     });
 
-    // options settings which can be configured as
     const optionSettingProperties: CfnEnvironment.OptionSettingProperty[] = [
       {
         namespace: 'aws:autoscaling:launchconfiguration',
@@ -98,47 +110,48 @@ export class EbCodePipelineStack extends Stack {
       {
         namespace: 'aws:autoscaling:asg',
         optionName: 'MinSize',
-        value: props?.maxSize ?? '1',
+        value: minSize || DEFAULT_SIZE,
       },
       {
         namespace: 'aws:autoscaling:asg',
         optionName: 'MaxSize',
-        value: props?.maxSize ?? '1',
+        value: maxSize || DEFAULT_SIZE,
       },
       {
         namespace: 'aws:ec2:instances',
         optionName: 'InstanceTypes',
-        value: props?.instanceTypes ?? 't2.micro',
+        value: instanceTypes || DEFAULT_INSTANCE_TYPE,
       },
-      /* alb configuration start here */
-      /* uncomment below code if you want to use alb with https enabled */
-      // {
-      //   namespace: 'aws:elasticbeanstalk:environment',
-      //   optionName: 'LoadBalancerType',
-      //   value: 'application',
-      // },
-      // {
-      //   namespace: 'aws:elbv2:listener:443',
-      //   optionName: 'ListenerEnabled',
-      //   value: 'true',
-      // },
-      // {
-      //   namespace: 'aws:elbv2:listener:443',
-      //   optionName: 'SSLCertificateArns',
-      //   value: props.sslCertificateArn,
-      // },
-      // {
-      //   namespace: 'aws:elbv2:listener:443',
-      //   optionName: 'Protocol',
-      //   value: 'HTTPS',
-      // },
-      //* alb configuration ends here */
     ];
 
-    // create an elasticbeanstalk environment to run the application
+    if (sslCertificateArn) {
+      optionSettingProperties.push(
+        {
+          namespace: 'aws:elasticbeanstalk:environment',
+          optionName: 'LoadBalancerType',
+          value: 'application',
+        },
+        {
+          namespace: 'aws:elbv2:listener:443',
+          optionName: 'ListenerEnabled',
+          value: 'true',
+        },
+        {
+          namespace: 'aws:elbv2:listener:443',
+          optionName: 'SSLCertificateArns',
+          value: sslCertificateArn,
+        },
+        {
+          namespace: 'aws:elbv2:listener:443',
+          optionName: 'Protocol',
+          value: 'HTTPS',
+        }
+      );
+    }
+
     const ebEnvironment = new CfnEnvironment(this, 'eb-environment', {
-      environmentName: props.envName,
-      applicationName: app.applicationName || appName,
+      environmentName: envName,
+      applicationName: appName,
       solutionStackName: '64bit Amazon Linux 2 v5.8.0 running Node.js 18',
       optionSettings: optionSettingProperties,
       versionLabel: appVersionProps.ref,
@@ -146,23 +159,21 @@ export class EbCodePipelineStack extends Stack {
 
     new CfnOutput(this, 'eb-url-endpoint', {
       value: ebEnvironment.attrEndpointUrl,
-      description: 'url endpoint for the elasticbeanstalk',
+      description: 'URL endpoint for the elasticbeanstalk',
     });
 
-    /*-----------------------codepipeline-------------------------------*/
+    /*-----------------------codepipeline---------------------------*/
 
-    // define the github source.
     const sourceOutput = new Artifact();
     const sourceAction = new GitHubSourceAction({
       actionName: 'GitHub',
-      owner: props.githubRepoOwner,
-      repo: props.githubRepoName,
-      branch: props.branch,
-      oauthToken: SecretValue.secretsManager(props.githubAccessTokenName),
+      owner: githubRepoOwner,
+      repo: githubRepoName,
+      branch: branch,
+      oauthToken: SecretValue.secretsManager(githubAccessTokenName),
       output: sourceOutput,
     });
 
-    // define the codebuild project.
     const buildOutput = new Artifact();
     const buildProject = new Project(this, 'codebuild-project', {
       buildSpec: BuildSpec.fromObject({
@@ -191,53 +202,36 @@ export class EbCodePipelineStack extends Stack {
       outputs: [buildOutput],
     });
 
-    // define the deployment action.
     const deployAction = new ElasticBeanstalkDeployAction({
       actionName: 'ElasticBeanstalk',
       applicationName: appName,
-      environmentName: props?.envName ?? 'eb-nodejs-app-environment',
-      input: props.projectType === 'ts' ? buildOutput : sourceOutput,
+      environmentName: envName || 'eb-nodejs-app-environment',
+      input: projectType === 'ts' ? buildOutput : sourceOutput,
     });
 
     const getPipelineBucket = Bucket.fromBucketName(
       this,
-      'ExistingBucket',
-      props.pipelineBucket
+      'existing-bucket',
+      pipelineBucket
     );
 
     const jsProject = [
-      {
-        stageName: 'Source',
-        actions: [sourceAction],
-      },
-      {
-        stageName: 'Deploy',
-        actions: [deployAction],
-      },
+      { stageName: 'Source', actions: [sourceAction] },
+      { stageName: 'Deploy', actions: [deployAction] },
     ];
 
     const tsProject = [
-      {
-        stageName: 'Source',
-        actions: [sourceAction],
-      },
-      {
-        stageName: 'Build',
-        actions: [buildAction],
-      },
-      {
-        stageName: 'Deploy',
-        actions: [deployAction],
-      },
+      { stageName: 'Source', actions: [sourceAction] },
+      { stageName: 'Build', actions: [buildAction] },
+      { stageName: 'Deploy', actions: [deployAction] },
     ];
 
-    const getStages = props.projectType === 'ts' ? tsProject : jsProject;
+    const stages = projectType === 'ts' ? tsProject : jsProject;
 
-    // construct the codepipeline.
     const codePipeline = new Pipeline(this, 'codepipeline', {
-      pipelineName: props.pipelineName,
+      pipelineName: pipelineName,
       artifactBucket: getPipelineBucket,
-      stages: getStages,
+      stages,
     });
 
     codePipeline.node.addDependency(app, ebEnvironment);
