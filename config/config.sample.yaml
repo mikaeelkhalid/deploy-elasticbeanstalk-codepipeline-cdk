@@ -16,7 +16,7 @@ dev:
   instanceTypes: t3.small
   ebEnvName:
   ebAppName:
-  envVariables: # add as many vars you want
+  envVariables: # optional: add as many vars as you want
     - name: name_a
       value: VALUE_A
     - name: name_b
