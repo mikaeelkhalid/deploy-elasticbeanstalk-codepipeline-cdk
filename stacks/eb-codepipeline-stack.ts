@@ -1,11 +1,7 @@
 import { CfnOutput, SecretValue, Stack, StackProps } from 'aws-cdk-lib';
 import { BuildSpec, LinuxBuildImage, Project } from 'aws-cdk-lib/aws-codebuild';
 import { Artifact, Pipeline } from 'aws-cdk-lib/aws-codepipeline';
-import {
-  CodeBuildAction,
-  ElasticBeanstalkDeployAction,
-  GitHubSourceAction,
-} from 'aws-cdk-lib/aws-codepipeline-actions';
+import { CodeBuildAction, ElasticBeanstalkDeployAction, GitHubSourceAction } from 'aws-cdk-lib/aws-codepipeline-actions';
 import { CfnApplication, CfnApplicationVersion, CfnEnvironment } from 'aws-cdk-lib/aws-elasticbeanstalk';
 import { CfnInstanceProfile, ManagedPolicy, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
@@ -117,7 +113,6 @@ export class EbCodePipelineStack extends Stack {
 
   private _createOptionSettingProperties(instanceProfileName: string, props: EbCodePipelineStackProps) {
     const { minSize, maxSize, instanceTypes, sslCertificateArn, envVariables } = props;
-
     const optionSettingProperties: CfnEnvironment.OptionSettingProperty[] = [
       {
         namespace: 'aws:autoscaling:launchconfiguration',
@@ -209,7 +204,6 @@ export class EbCodePipelineStack extends Stack {
   /*--------------------------codepipeline-----------------------------*/
   private _createSourceAction(props: EbCodePipelineStackProps) {
     const { githubRepoOwner, githubRepoName, githubAccessTokenName, branch } = props;
-
     const sourceOutput = new Artifact();
     const sourceAction = new GitHubSourceAction({
       actionName: 'GitHub',
@@ -265,13 +259,8 @@ export class EbCodePipelineStack extends Stack {
     return buildAction;
   }
 
-  private _createDeployAction(
-    sourceOutput: Artifact,
-    buildOutput: Artifact,
-    props: EbCodePipelineStackProps
-  ) {
+  private _createDeployAction(sourceOutput: Artifact, buildOutput: Artifact, props: EbCodePipelineStackProps) {
     const { envName, appName, projectType } = props;
-
     const deployAction = new ElasticBeanstalkDeployAction({
       actionName: 'ElasticBeanstalk',
       applicationName: appName,
