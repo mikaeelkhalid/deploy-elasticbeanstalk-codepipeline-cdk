@@ -7,10 +7,18 @@ const app = new cdk.App();
 
 if (devProps?.stackName?.length) {
   const devStackName = devProps.stackName;
-  new EbCodePipelineStack(app, devStackName, devProps);
+
+  new EbCodePipelineStack(app, devStackName, {
+    ...devProps,
+    description: 'eb-codepipeline dev environment stack',
+  });
 } else {
-  const prodStackName = prodProps?.stackName;
-  new EbCodePipelineStack(app, prodStackName, prodProps);
+  const prodStackName = prodProps.stackName;
+
+  new EbCodePipelineStack(app, prodStackName, {
+    ...prodProps,
+    description: 'eb-codepipeline prod environment stack',
+  });
 }
 
 app.synth();

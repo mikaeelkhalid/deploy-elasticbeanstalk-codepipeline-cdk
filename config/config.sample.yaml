@@ -13,6 +13,11 @@ dev:
     name:
   minSize: 1
   maxSize: 1
-  instanceTypes: t2.micro
+  instanceTypes: t3.small
   ebEnvName:
   ebAppName:
+  envVariables: # add as many vars you want
+    - name: name_a
+      value: VALUE_A
+    - name: name_b
+      value: VALUE_B

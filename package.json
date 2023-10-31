@@ -1,6 +1,10 @@
 {
   "name": "deploy-elasticbeanstalk-codepipeline-cdk",
   "version": "0.1.0",
+  "author": {
+    "name": "mikaeel khalid",
+    "url": "https://www.mikaeels.com"
+  },
   "bin": {
     "main": "bin/main.js"
   },

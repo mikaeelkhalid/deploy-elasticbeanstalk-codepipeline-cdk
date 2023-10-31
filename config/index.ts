@@ -26,6 +26,7 @@ if (config.environmentType === 'dev') {
     githubAccessTokenName: config.githubAccessTokenName,
     projectType: config.projectType,
     sslCertificateArn: config.sslCertificateArn,
+    envVariables: config.dev.envVariables,
   };
 }
 if (config.environmentType === 'prod') {
@@ -45,6 +46,7 @@ if (config.environmentType === 'prod') {
     githubAccessTokenName: config.githubAccessTokenName,
     projectType: config.projectType,
     sslCertificateArn: config.sslCertificateArn,
+    envVariables: config.prod.envVariables,
   };
 }
 
