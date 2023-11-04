@@ -16,6 +16,7 @@ dev:
   instanceTypes: t3.small
   ebEnvName:
   ebAppName:
+  healthCheckPath: / # change if required
   envVariables: # add as many vars you want
     - name: name_a
       value: VALUE_A
