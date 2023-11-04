@@ -27,6 +27,7 @@ if (config.environmentType === 'dev') {
     projectType: config.projectType,
     sslCertificateArn: config.sslCertificateArn,
     envVariables: config.dev.envVariables,
+    healthCheckPath: config.dev.healthCheckPath,
   };
 }
 if (config.environmentType === 'prod') {
@@ -47,6 +48,7 @@ if (config.environmentType === 'prod') {
     projectType: config.projectType,
     sslCertificateArn: config.sslCertificateArn,
     envVariables: config.prod.envVariables,
+    healthCheckPath: config.prod.healthCheckPath,
   };
 }
 

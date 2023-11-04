@@ -31,6 +31,7 @@ export interface EbCodePipelineStackProps extends StackProps {
       value: string;
     }
   ];
+  healthCheckPath: string;
 }
 
 export class EbCodePipelineStack extends Stack {
@@ -112,7 +113,7 @@ export class EbCodePipelineStack extends Stack {
   }
 
   private _createOptionSettingProperties(instanceProfileName: string, props: EbCodePipelineStackProps) {
-    const { minSize, maxSize, instanceTypes, sslCertificateArn, envVariables } = props;
+    const { minSize, maxSize, instanceTypes, sslCertificateArn, envVariables, healthCheckPath } = props;
     const optionSettingProperties: CfnEnvironment.OptionSettingProperty[] = [
       {
         namespace: 'aws:autoscaling:launchconfiguration',
@@ -137,7 +138,7 @@ export class EbCodePipelineStack extends Stack {
       {
         namespace: 'aws:elasticbeanstalk:environment:process:default',
         optionName: 'HealthCheckPath',
-        value: '/', // change to the '/' define in your app
+        value: healthCheckPath || '/',
       },
     ];
 
