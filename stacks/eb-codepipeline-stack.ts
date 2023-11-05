@@ -1,7 +1,13 @@
 import { CfnOutput, SecretValue, Stack, StackProps } from 'aws-cdk-lib';
 import { BuildSpec, LinuxBuildImage, Project } from 'aws-cdk-lib/aws-codebuild';
+import { Repository } from 'aws-cdk-lib/aws-codecommit';
 import { Artifact, Pipeline } from 'aws-cdk-lib/aws-codepipeline';
-import { CodeBuildAction, ElasticBeanstalkDeployAction, GitHubSourceAction } from 'aws-cdk-lib/aws-codepipeline-actions';
+import {
+  CodeBuildAction,
+  CodeCommitSourceAction,
+  ElasticBeanstalkDeployAction,
+  GitHubSourceAction,
+} from 'aws-cdk-lib/aws-codepipeline-actions';
 import { CfnApplication, CfnApplicationVersion, CfnEnvironment } from 'aws-cdk-lib/aws-elasticbeanstalk';
 import { CfnInstanceProfile, ManagedPolicy, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
@@ -21,7 +27,7 @@ export interface EbCodePipelineStackProps extends StackProps {
   pipelineName: string;
   pipelineBucket: string;
   githubRepoOwner: string;
-  githubRepoName: string;
+  gitRepoName: string;
   githubAccessTokenName: string;
   projectType: string;
   sslCertificateArn?: string;
@@ -32,6 +38,7 @@ export interface EbCodePipelineStackProps extends StackProps {
     }
   ];
   healthCheckPath: string;
+  isCodeCommit: boolean;
 }
 
 export class EbCodePipelineStack extends Stack {
@@ -204,21 +211,38 @@ export class EbCodePipelineStack extends Stack {
 
   /*--------------------------codepipeline-----------------------------*/
   private _createSourceAction(props: EbCodePipelineStackProps) {
-    const { githubRepoOwner, githubRepoName, githubAccessTokenName, branch } = props;
+    const { githubRepoOwner, gitRepoName, githubAccessTokenName, branch, isCodeCommit } = props;
     const sourceOutput = new Artifact();
-    const sourceAction = new GitHubSourceAction({
-      actionName: 'GitHub',
-      owner: githubRepoOwner,
-      repo: githubRepoName,
-      branch: branch,
-      oauthToken: SecretValue.secretsManager(githubAccessTokenName),
-      output: sourceOutput,
-    });
 
-    return {
-      sourceOutput,
-      sourceAction,
-    };
+    const repo = Repository.fromRepositoryName(this, 'existing-codecommit-repo', gitRepoName);
+
+    if (isCodeCommit) {
+      const sourceAction = new CodeCommitSourceAction({
+        actionName: 'CodeCommit',
+        repository: repo,
+        branch: branch,
+        output: sourceOutput,
+      });
+
+      return {
+        sourceOutput,
+        sourceAction,
+      };
+    } else {
+      const sourceAction = new GitHubSourceAction({
+        actionName: 'GitHub',
+        owner: githubRepoOwner,
+        repo: gitRepoName,
+        branch: branch,
+        oauthToken: SecretValue.secretsManager(githubAccessTokenName),
+        output: sourceOutput,
+      });
+
+      return {
+        sourceOutput,
+        sourceAction,
+      };
+    }
   }
 
   private _createBuildProject() {
@@ -261,7 +285,7 @@ export class EbCodePipelineStack extends Stack {
   }
 
   private _createDeployAction(sourceOutput: Artifact, buildOutput: Artifact, props: EbCodePipelineStackProps) {
-    const { envName, appName, projectType } = props;
+    const { envName, appName, projectType, isCodeCommit } = props;
     const deployAction = new ElasticBeanstalkDeployAction({
       actionName: 'ElasticBeanstalk',
       applicationName: appName,
@@ -274,13 +298,13 @@ export class EbCodePipelineStack extends Stack {
 
   private _createPipeline(
     deployAction: ElasticBeanstalkDeployAction,
-    sourceAction: GitHubSourceAction,
+    sourceAction: any,
     buildAction: CodeBuildAction,
     props: EbCodePipelineStackProps,
     app: CfnApplication,
     ebEnvironment: CfnEnvironment
   ) {
-    const { pipelineName, pipelineBucket, projectType } = props;
+    const { pipelineName, pipelineBucket, projectType, isCodeCommit } = props;
 
     const getPipelineBucket = Bucket.fromBucketName(this, 'existing-bucket', pipelineBucket);
 
@@ -302,6 +326,8 @@ export class EbCodePipelineStack extends Stack {
       artifactBucket: getPipelineBucket,
       stages,
     });
+
+    isCodeCommit && codePipeline.role.addManagedPolicy(ManagedPolicy.fromAwsManagedPolicyName('AWSCodeCommitReadOnly'));
 
     codePipeline.node.addDependency(app, ebEnvironment);
   }

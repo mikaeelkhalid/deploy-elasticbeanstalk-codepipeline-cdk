@@ -17,7 +17,7 @@ if (config.environmentType === 'dev') {
     pipelineName: config.dev.pipelineConfig.name,
     pipelineBucket: config.dev.pipelineBucket,
     githubRepoOwner: config.githubRepoOwner,
-    githubRepoName: config.githubRepoName,
+    gitRepoName: config.gitRepoName,
     minSize: config.dev.minSize.toString(),
     maxSize: config.dev.maxSize.toString(),
     instanceTypes: config.dev.instanceTypes,
@@ -28,6 +28,7 @@ if (config.environmentType === 'dev') {
     sslCertificateArn: config.sslCertificateArn,
     envVariables: config.dev.envVariables,
     healthCheckPath: config.dev.healthCheckPath,
+    isCodeCommit: config.dev.isCodeCommit,
   };
 }
 if (config.environmentType === 'prod') {
@@ -38,7 +39,7 @@ if (config.environmentType === 'prod') {
     pipelineName: config.prod.pipelineConfig.name,
     pipelineBucket: config.prod.pipelineBucket,
     githubRepoOwner: config.githubRepoOwner,
-    githubRepoName: config.githubRepoName,
+    gitRepoName: config.gitRepoName,
     minSize: config.prod.minSize,
     maxSize: config.prod.maxSize,
     instanceTypes: config.prod.instanceTypes,
@@ -49,6 +50,7 @@ if (config.environmentType === 'prod') {
     sslCertificateArn: config.sslCertificateArn,
     envVariables: config.prod.envVariables,
     healthCheckPath: config.prod.healthCheckPath,
+    isCodeCommit: config.prod.isCodeCommit,
   };
 }
 

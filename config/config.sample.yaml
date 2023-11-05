@@ -1,13 +1,14 @@
-environmentType:
-githubRepoName:
-githubRepoOwner:
-githubAccessTokenName:
+environmentType: dev
+gitRepoName: # could be codecommit or github repo
+githubRepoOwner: # if github repo
+githubAccessTokenName: # if github repo
 projectType: ts # value should be either: ts or js
 sslCertificateArn: # optional: add ssl certificate ARN if you want alb with ssl
 
 dev:
   stackName:
   branch:
+  isCodeCommit: false # if true codecommit repo will be use
   pipelineBucket:
   pipelineConfig:
     name:
