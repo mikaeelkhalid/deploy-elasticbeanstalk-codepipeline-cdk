@@ -19,7 +19,7 @@ Elastic Beanstalk using AWS CodePipeline and the AWS Cloud Development Kit (CDK)
 - AWS Command Line Interface (CLI) installed and configured.
 - AWS Cloud Development Kit (CDK) CLI installed.
 - Node.js and npm installed on your local machine.
-- A GitHub repository containing the source code of your Node.js application.
+- A GitHub or CodeCommit repository containing the source code of your Node.js application (ts or js).
 
 ### Setup & Deployment
 
