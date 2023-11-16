@@ -1,14 +1,20 @@
+stack:
+  account: '' #required
+  region: '' #required
+
 environmentType: dev
 gitRepoName: # could be codecommit or github repo
 githubRepoOwner: # if github repo
 githubAccessTokenName: # if github repo
 projectType: ts # value should be either: ts or js
 sslCertificateArn: # optional: add ssl certificate ARN if you want alb with ssl
+hostedZone: '' # required
 
 dev:
   stackName:
   branch:
   isCodeCommit: false # if true codecommit repo will be use
+  route53Subdomain:
   pipelineBucket:
   pipelineConfig:
     name:

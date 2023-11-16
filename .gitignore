@@ -11,3 +11,4 @@ package-lock.json
 express-app/package-lock.json
 express-app/node_modules
 config/config.yaml
+cdk.context.json

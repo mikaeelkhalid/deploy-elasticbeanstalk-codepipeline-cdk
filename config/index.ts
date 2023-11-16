@@ -29,6 +29,8 @@ if (config.environmentType === 'dev') {
     envVariables: config.dev.envVariables,
     healthCheckPath: config.dev.healthCheckPath,
     isCodeCommit: config.dev.isCodeCommit,
+    hostedZone: config.hostedZone,
+    route53Subdomain: config.dev.route53Subdomain,
   };
 }
 if (config.environmentType === 'prod') {
@@ -40,8 +42,8 @@ if (config.environmentType === 'prod') {
     pipelineBucket: config.prod.pipelineBucket,
     githubRepoOwner: config.githubRepoOwner,
     gitRepoName: config.gitRepoName,
-    minSize: config.prod.minSize,
-    maxSize: config.prod.maxSize,
+    minSize: config.prod.minSize.toString(),
+    maxSize: config.prod.maxSize.toString(),
     instanceTypes: config.prod.instanceTypes,
     envName: config.prod.ebEnvName,
     appName: config.prod.ebAppName,
@@ -51,8 +53,15 @@ if (config.environmentType === 'prod') {
     envVariables: config.prod.envVariables,
     healthCheckPath: config.prod.healthCheckPath,
     isCodeCommit: config.prod.isCodeCommit,
+    hostedZone: config.hostedZone,
+    route53Subdomain: config.prod.route53Subdomain,
   };
 }
+
+export const env = {
+  account: config.stack.account,
+  region: config.stack.region,
+};
 
 export { devProps, prodProps };
 

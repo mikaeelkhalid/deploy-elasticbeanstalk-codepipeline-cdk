@@ -8,10 +8,10 @@ import {
   ElasticBeanstalkDeployAction,
   GitHubSourceAction,
 } from 'aws-cdk-lib/aws-codepipeline-actions';
-import { CfnApplication, CfnApplicationVersion, CfnEnvironment } from 'aws-cdk-lib/aws-elasticbeanstalk';
+import { CfnApplication, CfnEnvironment } from 'aws-cdk-lib/aws-elasticbeanstalk';
 import { CfnInstanceProfile, ManagedPolicy, Role, ServicePrincipal } from 'aws-cdk-lib/aws-iam';
+import { CnameRecord, HostedZone } from 'aws-cdk-lib/aws-route53';
 import { Bucket } from 'aws-cdk-lib/aws-s3';
-import { Asset } from 'aws-cdk-lib/aws-s3-assets';
 import { Construct } from 'constructs';
 
 const DEFAULT_SIZE = '1';
@@ -30,7 +30,7 @@ export interface EbCodePipelineStackProps extends StackProps {
   gitRepoName: string;
   githubAccessTokenName: string;
   projectType: string;
-  sslCertificateArn?: string;
+  sslCertificateArn: string;
   envVariables?: [
     {
       name: string;
@@ -39,6 +39,8 @@ export interface EbCodePipelineStackProps extends StackProps {
   ];
   healthCheckPath: string;
   isCodeCommit: boolean;
+  hostedZone: string;
+  route53Subdomain: string;
 }
 
 export class EbCodePipelineStack extends Stack {
@@ -46,13 +48,11 @@ export class EbCodePipelineStack extends Stack {
     super(scope, id, props);
 
     /*-----------------------elasticbeanstalk---------------------------*/
-    const webAppZipArchive = this._createWebAppZip();
     const app = this._createApp(props);
-    const appVersion = this._createAppVersion(app, webAppZipArchive, props);
     const instanceRole = this._createInstanceRole(props);
     const instanceProfileName = this._createInstanceProfile(instanceRole, props);
     const optionSettingProperties = this._createOptionSettingProperties(instanceProfileName, props);
-    const ebEnvironment = this._createEbEnvironment(appVersion, optionSettingProperties, props);
+    const ebEnvironment = this._createEbEnvironment(optionSettingProperties, props, app);
 
     /*--------------------------codepipeline-----------------------------*/
     const { sourceOutput, sourceAction } = this._createSourceAction(props);
@@ -60,17 +60,12 @@ export class EbCodePipelineStack extends Stack {
     const buildAction = this._createBuildAction(buildProject, sourceOutput, buildOutput);
     const deployAction = this._createDeployAction(sourceOutput, buildOutput, props);
     this._createPipeline(deployAction, sourceAction, buildAction, props, app, ebEnvironment);
+
+    /*-----------------------------rout53-------------------------------*/
+    this._createRout53Record(props, ebEnvironment);
   }
 
-  /*-----------------------elasticbeanstalk---------------------------*/
-  private _createWebAppZip() {
-    const webAppZipArchive = new Asset(this, 'expressjs-app-zip', {
-      path: `${__dirname}/../express-app`,
-    });
-
-    return webAppZipArchive;
-  }
-
+  /*-------------------------elasticbeanstalk---------------------------*/
   private _createApp(props: EbCodePipelineStackProps) {
     const { appName } = props;
     const app = new CfnApplication(this, 'eb-application', {
@@ -78,21 +73,6 @@ export class EbCodePipelineStack extends Stack {
     });
 
     return app;
-  }
-
-  private _createAppVersion(app: CfnApplication, webAppZipArchive: Asset, props: EbCodePipelineStackProps) {
-    const { appName } = props;
-    const appVersionProps = new CfnApplicationVersion(this, 'eb-app-version', {
-      applicationName: appName,
-      sourceBundle: {
-        s3Bucket: webAppZipArchive.s3BucketName,
-        s3Key: webAppZipArchive.s3ObjectKey,
-      },
-    });
-
-    appVersionProps.addDependency(app);
-
-    return appVersionProps;
   }
 
   private _createInstanceRole(props: EbCodePipelineStackProps) {
@@ -188,9 +168,9 @@ export class EbCodePipelineStack extends Stack {
   }
 
   private _createEbEnvironment(
-    appVersionProps: CfnApplicationVersion,
     optionSettingProperties: CfnEnvironment.OptionSettingProperty[],
-    props: EbCodePipelineStackProps
+    props: EbCodePipelineStackProps,
+    app: CfnApplication
   ) {
     const { envName, appName } = props;
     const ebEnvironment = new CfnEnvironment(this, 'eb-environment', {
@@ -198,7 +178,6 @@ export class EbCodePipelineStack extends Stack {
       applicationName: appName,
       solutionStackName: '64bit Amazon Linux 2 v5.8.7 running Node.js 18',
       optionSettings: optionSettingProperties,
-      versionLabel: appVersionProps.ref,
     });
 
     new CfnOutput(this, 'eb-url-endpoint', {
@@ -206,7 +185,31 @@ export class EbCodePipelineStack extends Stack {
       description: 'URL endpoint for the elasticbeanstalk',
     });
 
+    ebEnvironment.addDependency(app);
+
     return ebEnvironment;
+  }
+
+  /*------------------------------rout53---------------------------------*/
+  private _createRout53Record(props: EbCodePipelineStackProps, ebEnvironment: CfnEnvironment) {
+    const { hostedZone, route53Subdomain } = props;
+
+    const zone = HostedZone.fromLookup(this, 'zone', { domainName: hostedZone });
+
+    const record = new CnameRecord(this, 'cname-record', {
+      zone: zone,
+      recordName: route53Subdomain,
+      domainName: ebEnvironment.attrEndpointUrl,
+    });
+
+    new CfnOutput(this, 'zone-record-name', {
+      value: record.domainName,
+      description: 'hosted zone record url',
+    });
+
+    record.node.addDependency(ebEnvironment);
+
+    return record;
   }
 
   /*--------------------------codepipeline-----------------------------*/
