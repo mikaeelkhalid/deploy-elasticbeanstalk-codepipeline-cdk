@@ -1,30 +1,30 @@
 stack:
-  account: '' #required
-  region: '' #required
+  account: # required
+  region: # required
 
 environmentType: dev
 gitRepoName: # could be codecommit or github repo
 githubRepoOwner: # if github repo
 githubAccessTokenName: # if github repo
 projectType: ts # value should be either: ts or js
-sslCertificateArn: # optional: add ssl certificate ARN if you want alb with ssl
-hostedZone: '' # required
+sslCertificateArn: # required
+hostedZone: # required
 
 dev:
   stackName:
-  branch:
+  branch: # required
   isCodeCommit: false # if true codecommit repo will be use
-  route53Subdomain:
-  pipelineBucket:
-  pipelineConfig:
-    name:
+  route53Subdomain: # required
+  pipelineBucket: # required
+  pipelineConfig: 
+    name: # required
   minSize: 1
   maxSize: 1
   instanceTypes: t3.small
-  ebEnvName:
-  ebAppName:
+  ebEnvName: # required
+  ebAppName: # required
   healthCheckPath: / # change if required
-  envVariables: # add as many vars you want
+  envVariables: # add vars if any
     - name: name_a
       value: VALUE_A
     - name: name_b
