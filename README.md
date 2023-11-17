@@ -5,6 +5,8 @@
 This repository provides a robust setup for deploying Node.js (will work with both TS and JS) type of applications onto AWS
 Elastic Beanstalk using AWS CodePipeline and the AWS Cloud Development Kit (CDK).
 
+If you want to attach **Route53** hosted zone subdomain: [route53 hosted zone version](https://github.com/mikaeelkhalid/deploy-elasticbeanstalk-codepipeline-cdk/tree/route53-version)
+
 ## ✨ Features
 
 - 🚀 Automated Deployment: Seamless deployment of an Express.js application onto Elastic Beanstalk.
